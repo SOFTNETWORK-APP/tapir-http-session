@@ -1,7 +1,7 @@
 package com.softwaremill.session
 
 import akka.http.scaladsl.model.{DateTime, HttpHeader}
-import akka.http.scaladsl.model.headers.{RawHeader, HttpCookie, Cookie, `Set-Cookie`}
+import akka.http.scaladsl.model.headers._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import com.softwaremill.session.SessionOptions._
 import com.softwaremill.session.TestData._
@@ -26,8 +26,8 @@ trait MultipleTransportTest { this: ScalatestRouteTest =>
   }
 
   object TestUsingCookies extends TestUsingTransport {
-    val sessionCookieName = sessionConfig.sessionCookieConfig.name
-    val refreshTokenCookieName = sessionConfig.refreshTokenCookieConfig.name
+    val sessionCookieName: String = sessionConfig.sessionCookieConfig.name
+    val refreshTokenCookieName: String = sessionConfig.refreshTokenCookieConfig.name
 
     val transportName = "cookies"
 
@@ -38,41 +38,45 @@ trait MultipleTransportTest { this: ScalatestRouteTest =>
       case _                    => false
     }
 
-    def getSession = cookiesMap.get(sessionCookieName).map(_.value)
-    def countSessionHeaders = countCookies(sessionCookieName)
-    def setSessionHeader(s: String) = Cookie(sessionCookieName, s)
-    def isSessionExpired = cookiesMap.get(sessionCookieName).flatMap(_.expires).contains(DateTime.MinValue)
+    def getSession: Option[String] = cookiesMap.get(sessionCookieName).map(_.value)
+    def countSessionHeaders: Int = countCookies(sessionCookieName)
+    def setSessionHeader(s: String): Cookie = Cookie(sessionCookieName, s)
+    def isSessionExpired: Boolean =
+      cookiesMap.get(sessionCookieName).flatMap(_.expires).contains(DateTime.MinValue)
 
-    def getRefreshToken = cookiesMap.get(refreshTokenCookieName).map(_.value)
-    def countRefreshTokenHeaders = countCookies(refreshTokenCookieName)
-    def setRefreshTokenHeader(s: String) = Cookie(refreshTokenCookieName, s)
-    def isRefreshTokenExpired = cookiesMap.get(refreshTokenCookieName).flatMap(_.expires).contains(DateTime.MinValue)
+    def getRefreshToken: Option[String] = cookiesMap.get(refreshTokenCookieName).map(_.value)
+    def countRefreshTokenHeaders: Int = countCookies(refreshTokenCookieName)
+    def setRefreshTokenHeader(s: String): Cookie = Cookie(refreshTokenCookieName, s)
+    def isRefreshTokenExpired: Boolean =
+      cookiesMap.get(refreshTokenCookieName).flatMap(_.expires).contains(DateTime.MinValue)
 
-    def getSessionTransport = usingCookies
-    def setSessionTransport = usingCookies
+    def getSessionTransport: GetSessionTransport = usingCookies
+    def setSessionTransport: SetSessionTransport = usingCookies
   }
 
   object TestUsingHeaders extends TestUsingTransport {
-    val setSessionHeaderName = sessionConfig.sessionHeaderConfig.sendToClientHeaderName
-    val sessionHeaderName = sessionConfig.sessionHeaderConfig.getFromClientHeaderName
-    val setRefreshTokenHeaderName = sessionConfig.refreshTokenHeaderConfig.sendToClientHeaderName
-    val refreshTokenHeaderName = sessionConfig.refreshTokenHeaderConfig.getFromClientHeaderName
+    val setSessionHeaderName: String = sessionConfig.sessionHeaderConfig.sendToClientHeaderName
+    val sessionHeaderName: String = sessionConfig.sessionHeaderConfig.getFromClientHeaderName
+    val setRefreshTokenHeaderName: String =
+      sessionConfig.refreshTokenHeaderConfig.sendToClientHeaderName
+    val refreshTokenHeaderName: String =
+      sessionConfig.refreshTokenHeaderConfig.getFromClientHeaderName
 
     val transportName = "headers"
 
     private def countHeaders(name: String): Int = headers.count(_.is(name.toLowerCase))
 
-    def getSession = header(setSessionHeaderName).map(_.value)
-    def countSessionHeaders = countHeaders(setSessionHeaderName)
-    def setSessionHeader(s: String) = RawHeader(sessionHeaderName, s)
-    def isSessionExpired = getSession.contains("")
+    def getSession: Option[String] = header(setSessionHeaderName).map(_.value)
+    def countSessionHeaders: Int = countHeaders(setSessionHeaderName)
+    def setSessionHeader(s: String): RawHeader = RawHeader(sessionHeaderName, s)
+    def isSessionExpired: Boolean = getSession.contains("")
 
-    def getRefreshToken = header(setRefreshTokenHeaderName).map(_.value)
-    def countRefreshTokenHeaders = countHeaders(setRefreshTokenHeaderName)
-    def setRefreshTokenHeader(s: String) = RawHeader(refreshTokenHeaderName, s)
-    def isRefreshTokenExpired = getRefreshToken.contains("")
+    def getRefreshToken: Option[String] = header(setRefreshTokenHeaderName).map(_.value)
+    def countRefreshTokenHeaders: Int = countHeaders(setRefreshTokenHeaderName)
+    def setRefreshTokenHeader(s: String): RawHeader = RawHeader(refreshTokenHeaderName, s)
+    def isRefreshTokenExpired: Boolean = getRefreshToken.contains("")
 
-    def getSessionTransport = usingHeaders
-    def setSessionTransport = usingHeaders
+    def getSessionTransport: GetSessionTransport = usingHeaders
+    def setSessionTransport: SetSessionTransport = usingHeaders
   }
 }

@@ -3,17 +3,19 @@ package com.softwaremill.session
 import scala.util.Try
 
 object Legacy {
-  class MultiValueSessionSerializerV0_5_2[T](toMap: T => Map[String, String], fromMap: Map[String, String] => Try[T])
-      extends SessionSerializer[T, String] {
+  class MultiValueSessionSerializerV0_5_2[T](
+    toMap: T => Map[String, String],
+    fromMap: Map[String, String] => Try[T]
+  ) extends SessionSerializer[T, String] {
 
     import SessionSerializer._
 
-    override def serialize(t: T) =
+    override def serialize(t: T): String =
       toMap(t)
         .map { case (k, v) => urlEncode(k) + "=" + urlEncode(v) }
         .mkString("&")
 
-    override def deserialize(s: String) = {
+    override def deserialize(s: String): Try[T] = {
       Try {
         if (s == "") Map.empty[String, String]
         else {
@@ -35,7 +37,9 @@ object Legacy {
       s"$expiry-$serialized"
     }
 
-    val encrypted = if (config.sessionEncryptData) Crypto.encrypt_AES(withExpiry, config.serverSecret) else withExpiry
+    val encrypted =
+      if (config.sessionEncryptData) Crypto.encrypt_AES(withExpiry, config.serverSecret)
+      else withExpiry
 
     s"${Crypto.sign_HmacSHA1_hex(serialized, config.serverSecret)}-$encrypted"
   }
