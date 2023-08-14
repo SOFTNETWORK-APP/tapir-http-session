@@ -1,5 +1,5 @@
 ![Build Status](https://github.com/SOFTNETWORK-APP/tapir-http-session/workflows/Build/badge.svg)
-[![codecov](https://codecov.io/github/SOFTNETWORK-APP/tapir-http-session/branch/main/graph/badge.svg?token=M9KVXR8KGS)](https://codecov.io/gh/SOFTNETWORK-APP/tapir-http-session/)
+[![codecov](https://codecov.io/gh/SOFTNETWORK-APP/tapir-http-session/branch/master/graph/badge.svg?token=AYTRPZ1MYV)](https://codecov.io/gh/SOFTNETWORK-APP/tapir-http-session)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/122252a6bdfb41c3af16d31f8cefaecc)](https://www.codacy.com/gh/SOFTNETWORK-APP/tapir-http-session/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=SOFTNETWORK-APP/tapir-http-session&amp;utm_campaign=Badge_Grade)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -41,10 +41,6 @@ session data that is sent to the client, and verified when the session token is 
 
 * all `akka-http-session` features
 * [tapir](https://tapir.softwaremill.com) integration
-
-## Example
-
-You can try out a simple example by running [`com.softwaremill.example.ScalaExample`](https://github.com/softwaremill/akka-http-session/blob/master/example/src/main/scala/com/softwaremill/example/ScalaExample.scala) or [`com.softwaremill.example.JavaExample`](https://github.com/softwaremill/akka-http-session/blob/master/example/src/main/java/com/softwaremill/example/JavaExample.java) and opening [http://localhost:8080](http://localhost:8080).
 
 ## `SessionManager` & configuration
 
