@@ -1,7 +1,7 @@
 ![Build Status](https://github.com/SOFTNETWORK-APP/tapir-http-session/workflows/Build/badge.svg)
 [![codecov](https://codecov.io/gh/SOFTNETWORK-APP/tapir-http-session/branch/master/graph/badge.svg?token=AYTRPZ1MYV)](https://codecov.io/gh/SOFTNETWORK-APP/tapir-http-session)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/122252a6bdfb41c3af16d31f8cefaecc)](https://www.codacy.com/gh/SOFTNETWORK-APP/tapir-http-session/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=SOFTNETWORK-APP/tapir-http-session&amp;utm_campaign=Badge_Grade)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 [`tapir`](https://tapir.softwaremill.com) is a declarative, type-safe web endpoints library.
 
