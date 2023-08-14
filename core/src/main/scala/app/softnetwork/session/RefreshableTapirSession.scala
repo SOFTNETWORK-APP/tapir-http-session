@@ -13,7 +13,6 @@ import scala.util.{Failure, Success}
 
 private[session] trait RefreshableTapirSession[T] extends Completion {
   this: OneOffTapirSession[T] =>
-  import TapirImplicits._
 
   implicit def refreshTokenStorage: RefreshTokenStorage[T]
 

@@ -12,8 +12,6 @@ import scala.concurrent.{ExecutionContext, Future}
 
 private[session] trait TapirCsrf[T] { _: CsrfCheck =>
 
-  import TapirImplicits._
-
   def manager: SessionManager[T]
 
   implicit def ec: ExecutionContext

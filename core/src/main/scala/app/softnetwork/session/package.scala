@@ -1,16 +1,28 @@
-package app.softnetwork.session
+package app.softnetwork
 
 import akka.http.scaladsl.model.headers.{HttpCookie, RawHeader}
 import akka.http.scaladsl.model.{headers => AkkaHeaders}
 import sttp.model.Header
 import sttp.model.headers.Cookie.SameSite
 import sttp.model.headers.{CookieValueWithMeta, CookieWithMeta}
+import sttp.tapir.Endpoint
+import sttp.tapir.server.PartialServerEndpointWithSecurityOutput
 
 import java.time.Instant
 
+import scala.concurrent.Future
 import scala.language.implicitConversions
 
-object TapirImplicits {
+package object session {
+  implicit def endpointToPartialServerEndpointWithSecurityOutput[T, SECURITY_INPUT, ERROR_OUTPUT](
+    endpoint: => Endpoint[SECURITY_INPUT, Unit, ERROR_OUTPUT, Unit, Any]
+  )(implicit
+    f: SECURITY_INPUT => Option[T]
+  ): PartialServerEndpointWithSecurityOutput[SECURITY_INPUT, Option[
+    T
+  ], Unit, ERROR_OUTPUT, Unit, Unit, Any, Future] =
+    endpoint
+      .serverSecurityLogicSuccessWithOutput(si => Future.successful(((), f(si))))
 
   implicit def akkaSameSiteToTapirSameSite(
     maybeSameSite: Option[AkkaHeaders.SameSite]

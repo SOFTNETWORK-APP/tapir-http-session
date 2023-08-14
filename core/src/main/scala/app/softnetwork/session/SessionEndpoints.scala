@@ -8,16 +8,6 @@ import scala.concurrent.{ExecutionContext, Future}
 
 trait SessionEndpoints {
 
-  def setSessionEndpoint[T, SECURITY_INPUT, ERROR_OUTPUT](
-    endpoint: => Endpoint[SECURITY_INPUT, Unit, ERROR_OUTPUT, Unit, Any]
-  )(implicit
-    f: SECURITY_INPUT => Option[T]
-  ): PartialServerEndpointWithSecurityOutput[SECURITY_INPUT, Option[
-    T
-  ], Unit, ERROR_OUTPUT, Unit, Unit, Any, Future] =
-    endpoint
-      .serverSecurityLogicSuccessWithOutput(si => Future.successful(((), f(si))))
-
   /** Set the session cookie with the session content. The content is signed, optionally encrypted
     * and with an optional expiry date.
     *
@@ -37,7 +27,7 @@ trait SessionEndpoints {
     sc.setSession(st)(body)
 
   def setSessionWithAuth[T, A](sc: TapirSessionContinuity[T], st: SetSessionTransport)(
-    auth: EndpointInput.Auth[A, EndpointInput.AuthType.Http]
+    auth: => EndpointInput.Auth[A, EndpointInput.AuthType.Http]
   )(implicit f: A => Option[T]): PartialServerEndpointWithSecurityOutput[
     (A, Seq[Option[String]]),
     Option[T],
@@ -54,9 +44,13 @@ trait SessionEndpoints {
     Future
   ] =
     setSession[T, A, Unit, Unit](sc, st) {
-      setSessionEndpoint {
-        endpoint.securityIn(auth)
-      }
+      endpoint
+        .securityIn(auth)
+        .serverSecurityLogicSuccessWithOutput(credentials =>
+          Future.successful(
+            ((), f(credentials))
+          )
+        )
     }
 
   /** Read a session from the session cookie, wrapped in [[SessionResult]] describing the possible

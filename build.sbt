@@ -3,17 +3,18 @@ val scala2_13 = "2.13.8"
 val scala2 = List(scala2_12, scala2_13)
 
 lazy val commonSettings = Seq(
-  organization := "app.softnetwork.session",
+  organization := "app.softnetwork.tapir-http-session",
+  version := "0.1.0",
   versionScheme := Some("early-semver")
 )
 
-val akkaHttpSession = "0.7.0"
+val akkaHttpSessionVersion = "0.7.0"
 val akkaHttpVersion = "10.2.7"
 val akkaVersion = "2.6.18"
 val json4sVersion = "4.0.4"
 val akkaStreams = "com.typesafe.akka" %% "akka-stream" % akkaVersion
 val akkaStreamsTestkit = "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % "test"
-val tapirVersion = "1.3.0"
+val tapirVersion = "1.7.0"
 
 val scalaTest = "org.scalatest" %% "scalatest" % "3.2.11" % "test"
 
@@ -43,7 +44,7 @@ lazy val core = (projectMatrix in file("core"))
   .settings(
     name := "core",
     libraryDependencies ++= Seq(
-      "com.softwaremill.akka-http-session" %% "core" % akkaHttpSession  excludeAll ExclusionRule(organization = "com.typesafe.akka"),
+      "com.softwaremill.akka-http-session" %% "core" % akkaHttpSessionVersion  excludeAll ExclusionRule(organization = "com.typesafe.akka"),
       "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
       akkaStreams % "provided",
       "com.softwaremill.sttp.tapir" %% "tapir-core" % tapirVersion,

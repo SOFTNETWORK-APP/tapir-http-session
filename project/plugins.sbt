@@ -5,3 +5,5 @@ resolvers += "Softnetwork releases" at "https://softnetwork.jfrog.io/artifactory
 addSbtPlugin("app.softnetwork.sbt-softnetwork" % "sbt-softnetwork-git" % sbtSoftNetworkVersion)
 addSbtPlugin("app.softnetwork.sbt-softnetwork" % "sbt-softnetwork-info" % sbtSoftNetworkVersion)
 addSbtPlugin("app.softnetwork.sbt-softnetwork" % "sbt-softnetwork-publish" % sbtSoftNetworkVersion)
+
+addSbtPlugin("org.scoverage" % "sbt-scoverage" % "2.0.8")

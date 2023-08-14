@@ -33,9 +33,7 @@ class OneOffSetRefreshableGetTapirTest
     using: TestUsingTransport
   )(implicit manager: SessionManager[Map[String, String]]): ServerEndpoint[Any, Future] =
     setSession(oneOff, using.setSessionTransport) {
-      setSessionEndpoint {
-        endpoint
-      }
+      endpoint
     }.in("set")
       .out(stringBody)
       .serverLogicSuccess(_ => _ => Future.successful("ok"))
@@ -60,7 +58,7 @@ class OneOffSetRefreshableGetTapirTest
     using: TestUsingTransport
   )(implicit manager: SessionManager[Map[String, String]]): ServerEndpoint[Any, Future] =
     invalidateSession(refreshable, using.getSessionTransport) {
-      endpoint.serverSecurityLogicSuccessWithOutput(_ => Future.successful(((), ())))
+      endpoint
     }.in("invalidate")
       .out(stringBody)
       .serverLogicSuccess(_ => _ => Future.successful("ok"))

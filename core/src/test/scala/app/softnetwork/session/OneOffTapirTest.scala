@@ -28,9 +28,7 @@ class OneOffTapirTest
 
   def setEndpoint(using: TestUsingTransport)(implicit manager: SMan): ServerEndpoint[Any, Future] =
     setSession(oneOff, using.setSessionTransport) {
-      setSessionEndpoint {
-        endpoint
-      }
+      endpoint
     }.in("set")
       .out(stringBody)
       .serverLogicSuccess(_ => _ => Future.successful("ok"))
@@ -63,7 +61,7 @@ class OneOffTapirTest
     using: TestUsingTransport
   )(implicit manager: SessionManager[Map[String, String]]): ServerEndpoint[Any, Future] =
     invalidateSession(oneOff, using.getSessionTransport) {
-      endpoint.serverSecurityLogicSuccessWithOutput(_ => Future.successful(((), ())))
+      endpoint
     }.in("invalidate")
       .out(stringBody)
       .serverLogicSuccess(_ => _ => Future.successful("ok"))

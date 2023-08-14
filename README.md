@@ -1,19 +1,16 @@
-![akka-http-session](https://github.com/softwaremill/akka-http-session/raw/master/banner.png)
+![Build Status](https://github.com/SOFTNETWORK-APP/tapir-http-session/workflows/Build/badge.svg)
+[![codecov](https://codecov.io/github/SOFTNETWORK-APP/tapir-http-session/branch/main/graph/badge.svg?token=M9KVXR8KGS)](https://codecov.io/gh/SOFTNETWORK-APP/tapir-http-session/)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/122252a6bdfb41c3af16d31f8cefaecc)](https://www.codacy.com/gh/SOFTNETWORK-APP/tapir-http-session/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=SOFTNETWORK-APP/tapir-http-session&amp;utm_campaign=Badge_Grade)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-[![Build Status](https://travis-ci.org/softwaremill/akka-http-session.svg?branch=master)](https://travis-ci.org/softwaremill/akka-http-session)
-[![Join the chat at https://gitter.im/softwaremill/akka-http-session](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/softwaremill/akka-http-session?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.softwaremill.akka-http-session/core_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.softwaremill.akka-http-session/core_2.12)
-
-[`akka-http`](https://doc.akka.io/docs/akka-http/current/index.html) is an Akka 
-module, originating from [spray.io](http://spray.io), for building *reactive* REST services with an elegant DSL.
-
-`akka-http` is a great toolkit for building backends for single-page or mobile applications. In almost all apps there 
-is a need to maintain user sessions, make sure session data is secure and cannot be tampered with.
+[`tapir`](https://tapir.softwaremill.com) is a declarative, type-safe web endpoints library.
 
 `akka-http-session` provides directives for client-side session management in web and mobile applications, using cookies
 or custom headers + local storage, with optional [Json Web Tokens](http://jwt.io/) format support. 
 
 A [comprehensive FAQ](https://github.com/softwaremill/akka-http-session-faq) is available, along with code examples (in Java, but easy to translate to Scala) which answers many common questions on how sessions work, how to secure them and implement using akka-http.
+
+`tapir-http-session` is an extension of `akka-http-session` providing integration with `tapir` library.
 
 ## What is a session?
 
@@ -39,7 +36,11 @@ session data that is sent to the client, and verified when the session token is 
 * refresh token support (e.g. to implement "remember me")
 * CSRF tokens support
 * Java & Scala APIs
-* Support for [Tapir](https://tapir.softwaremill.com)
+
+## `tapir-http-session` features
+
+* all `akka-http-session` features
+* [tapir](https://tapir.softwaremill.com) integration
 
 ## Example
 
@@ -47,7 +48,7 @@ You can try out a simple example by running [`com.softwaremill.example.ScalaExam
 
 ## `SessionManager` & configuration
 
-All directives / endpoints require an (implicit for scala) instance of a `SessionManager[T]` (or `SessionManager<T>`), which can be created by providing a server 
+All endpoints require an (implicit for scala) instance of a `SessionManager[T]` (or `SessionManager<T>`), which can be created by providing a server 
 secret (via a `SessionConfig`). The secret should be a long, random string unique to each environment your app is
 running in. You can generate one with `SessionUtil.randomServerSecret()`. Note that when you change the secret, 
 all sessions will become invalid.
@@ -66,13 +67,13 @@ recommended that all sites use `https` and all cookies have this attribute set.
 
 ## Client-side sessions
 
-All session-related directives / endpoints take at least two parameters:
+All session-related endpoints take at least two parameters:
  
 * session continuity: `oneOff` vs `refreshable`; specifies what should happen when the session expires. If `refreshable`
 and a refresh token is present, the session will be re-created. See below for details.
 * session transport: `usingCookies` vs `usingHeaders`
 
-Typically, you would create aliases for the session-related directives which use the right parameters basing on the
+Typically, you would create aliases for the session-related endpoints which use the right parameters basing on the
 current request and logic specific to your application.
 
 ### Cookies vs header
@@ -100,16 +101,16 @@ usage can be found [here](https://github.com/softwaremill/akka-http-session/blob
 
 Here are code samples in [scala](https://github.com/softwaremill/akka-http-session/blob/master/example/src/main/scala/com/softwaremill/example/session/manager/MyScalaSessionManager.scala) and [java](https://github.com/softwaremill/akka-http-session/blob/master/example/src/main/java/com/softwaremill/example/session/manager/MyJavaSessionManager.java) illustrating how to create a session manager where the session content will be a single `Long` number.
 
-The basic directives / endpoints enable you to set, read and invalidate the session. To create a new client-side session (create
-and set a new session cookie), you need to use the `setSession` directive. See how it's done in [java](https://github.com/softwaremill/akka-http-session/blob/master/example/src/main/java/com/softwaremill/example/session/SetSessionJava.java), [scala](https://github.com/softwaremill/akka-http-session/blob/master/example/src/main/scala/com/softwaremill/example/session/SetSessionScala.scala) and [tapir](https://github.com/softwaremill/akka-http-session/blob/master/example/src/main/scala/com/softwaremill/example/session/SetSessionTapir.scala).
+The basic endpoints enable you to set, read and invalidate the session. To create a new client-side session (create
+and set a new session cookie), you need to use the `setSession` endpoint. See how it's done [here](https://github.com/SOFTNETWORK-APP/tapir-http-session/blob/master/example/src/main/scala/app/softnetwork/example/session/SetSession.scala).
 
 Note that when using cookies, their size is limited to 4KB, so you shouldn't put too much data in there (the signature 
 takes about 50 characters). 
 
 You can require a session to be present, optionally require a session or get a full description of possible session decode outcomes. 
-Check [java](https://github.com/softwaremill/akka-http-session/blob/master/example/src/main/java/com/softwaremill/example/session/VariousSessionsJava.java), [scala](https://github.com/softwaremill/akka-http-session/blob/master/example/src/main/scala/com/softwaremill/example/session/VariousSessionsScala.scala) and [tapir](https://github.com/softwaremill/akka-http-session/blob/master/example/src/main/scala/com/softwaremill/example/session/VariousSessionsTapir.scala) examples for details.
+Check [here](https://github.com/SOFTNETWORK-APP/tapir-http-session/blob/master/example/src/main/scala/app/softnetwork/example/session/VariousSessions.scala) examples for details.
 
-If a required session is not present, by default a `403` HTTP status code is returned. Finally, a session can be invalidated. See how it's done in examples for [java](https://github.com/softwaremill/akka-http-session/blob/master/example/src/main/java/com/softwaremill/example/session/SessionInvalidationJava.java), [scala](https://github.com/softwaremill/akka-http-session/blob/master/example/src/main/scala/com/softwaremill/example/session/SessionInvalidationScala.scala) and [tapir](https://github.com/softwaremill/akka-http-session/blob/master/example/src/main/scala/com/softwaremill/example/session/SessionInvalidationTapir.scala).
+If a required session is not present, by default a `403` HTTP status code is returned. Finally, a session can be invalidated. See how it's done [here](https://github.com/SOFTNETWORK-APP/tapir-http-session/blob/master/example/src/main/scala/app/softnetwork/example/session/SessionInvalidation.scala).
 
 ### Encrypting the session
 
@@ -126,96 +127,6 @@ option.
 Note that when using cookies, even though the cookie sent will be a session cookie, it is possible that the client 
 will have the browser open for a very long time, [uses Chrome or FF](http://stackoverflow.com/questions/10617954/chrome-doesnt-delete-session-cookies), 
 or if an attacker steals the cookie, it can be re-used. Hence having an expiry date for sessions is highly recommended.
-
-## JWT: encoding sessions
-
-By default, sessions are encoded into a string using a custom format, where expiry/data/signature parts are separated using `-`, and data fields are separated using `=` and url-encoded.
-
-You can also encode sessions in the [Json Web Tokens](http://jwt.io) format, by adding the additional `jwt` dependency, which makes use of [`json4s`](http://json4s.org).
-
-When using JWT, you need to provide a serializer which serializes session data to a `JValue` instead of a `String`. 
-A number of serializers for the basic types are present in `JValueSessionSerializer`, as well as a generic serializer for case classes (used above).
-
-You may also find it helpful to include the json4s-ext library which provides serializers for common Java types such as  `java.util.UUID`, `org.joda.time._` and Java enumerations.
-
-Grab some [java](https://github.com/softwaremill/akka-http-session/blob/master/example/src/main/java/com/softwaremill/example/jwt/JavaJwtExample.java) and [scala](https://github.com/softwaremill/akka-http-session/blob/master/example/src/main/scala/com/softwaremill/example/serializers/JWTSerializersScala.scala) examples.
-
-There are many tools available to read JWT session data using various platforms, e.g. 
-[for Angular](https://github.com/auth0/angular-jwt).
-
-It is also possible to customize the session data content generated by overriding appropriate methods in 
-`JwtSessionEncoder` (e.g. provide additional claims in the payload).
-
-## Registered JWT claims support
-
-This library supports all registered claims mentioned in [RFC 7519, Section 4.1](https://tools.ietf.org/html/rfc7519#page-9).
-
-Static claims such as `iss` (*Issuer*), `sub` (*Subject*) and `aud` (*Audience*) can be configured by setting `akka.http.session.jwt.iss`, `akka.http.session.jwt.sub` and `akka.http.session.jwt.aud` string properties, respectively.
-
-Because claims such as `exp` (*Expiration Time*) and `nbf` (*Not Before*) depend on the time at which the JWT was issued, configuration expects durations instead of fixed timestamps.
-Effective claim values are then calculated by adding these offsets to the current timestamp (the JWT's issue time).
-The offset values are configured via keys defined under `akka.http.session.jwt.exp-timeout` and `akka.http.session.jwt.nbf-offset`.
-
-If `exp-timeout` is not defined, value of `akka.http.session.max-age` would be used instead.
-
-`iat` (*Issued At*) claim represents issue time and cannot be customized. Although you can decide to include this claim in your tokens or not by setting `akka.http.session.jwt.include-iat` to `true` or `false`. By default, this claim is not included.
-
-`jti` (*JWT ID*) claim is a case-sensitive string containing a unique identifier for the JWT. It must be unique per token and collisions must be prevented even among values produced by different issuers.
-Akka-http-session will compute and include `jti` claim if `akka.http.session.jwt.include-jti` is set to `true` (it's disabled by default).
-Token ids are generated using the below scheme:
-
-`<iss claim value>-<random UUID>` or just `<random UUID>`, depending on the `iss` claim presence.
-
-You can find a sample claims configuration below:
-````hocon
-akka.http.session {
-  jwt {
-    iss = "Issuer"
-    sub = "Subject"
-    aud = "Audience"
-    exp-timeout = 7 days
-    nbf-offset = 5 minutes
-    include-iat = true
-    include-jti = true
-  }
-}
-
-````
-
-## Signing session using a configurable algorithm
-
-In the case of JWT, it's possible to configure which JWS algorithm should be used. Currently, supported ones are:
-* `HS256` - HMAC using SHA-256 (used by default)
-* `RS256` - RSA (RSASSA-PKCS1-v1_5) using SHA-256
-
-All non-JWT sessions use HMAC with SHA-256 and this cannot be configured.
-
-### Configuring JWS (for JSON Web Tokens only)
-
-In order to start using RSA algorithm you have to configure `akka.http.session.jws.alg` and `akka.http.session.jws.rsa-private-key` properties:
-````hocon
-akka.http.session {
-  jws {
-    alg = "RS256"
-    rsa-private-key = "<your private PKCS#8 key goes here>"
-  }
-}
-````
-
-Because `HS256` is used by default you may skip the `jws` configuration and rely on a reference configuration delivered with the library. 
-Alternatively, if you prefer to be more explicit, you might follow this configuration template:
-````hocon
-akka.http.session {
-  server-secret = "<at least 64-digits length secret goes here>"
-  jws {
-    alg = "HS256"
-  }
-}
-````
-
-You might notice that even if you want to sign your sessions using RSA key and encryption is disabled, you still have to define the server-secret property.
-
-That's because all non-JWT sessions still depend on HMAC with SHA256 algorithm which requires the server secret and the library cannot determine which session encoder(s) will be used (it's specified in the client's code).
 
 ## CSRF protection (cookie transport only)
 
@@ -236,7 +147,7 @@ Currently, setting a custom header seems to be a secure solution, and is what a 
 using custom headers to send session data, no additional protection is needed).
 
 It is recommended to generate a new CSRF token after logging in, see [this SO question](http://security.stackexchange.com/questions/22903/why-refresh-csrf-token-per-form-request).
-A new token can be generated using the `setNewCsrfToken` directive.
+A new token can be generated using the `setNewCsrfToken` endpoint and checked using the `hmacTokenCsrfProtection`. See how it's done [here](https://github.com/SOFTNETWORK-APP/tapir-http-session/blob/master/example/src/main/scala/app/softnetwork/example/session/Csrf.scala).
 
 By default the name of the CSRF cookie and the custom header matches what [AngularJS expects and sets](https://docs.angularjs.org/api/ng/service/$http).
 These can be customized in the config.
@@ -281,52 +192,9 @@ which expire fast, and weaker-authenticated re-creatable sessions (as described 
 When touching an existing session, the refresh token will not be re-generated and extended, only the session
 cookie.
 
-## Links
-
-* [Bootzooka](https://github.com/softwaremill/bootzooka), a web application template project using `akka-http` and `akka-http-session`
-* [Spray session](https://github.com/gnieh/spray-session), similar project for spray.io
-* [Spray SPA](https://github.com/enetsee/Spray-SPA), a single-page-application demo built using spray.io, also
-containing an implementation of client-side sessions
-* [Play framework](https://playframework.com), a full web framework, from which parts of the session encoding/decoding
-code was taken
-* [Rails security guide](http://guides.rubyonrails.org/security.html#session-storage), a description of how sessions are
-stored in Rails
-* [Akka-Http issue 114](https://github.com/akka/akka-http/issues/114) for implementing similar functionality straight in Akka-Http
-* [Implementing remember me](https://paragonie.com/blog/2015/04/secure-authentication-php-with-long-term-persistence#title.2)
-* [The definitive guide to form-based website authorization](http://stackoverflow.com/questions/549/the-definitive-guide-to-form-based-website-authentication)
-* [The Anatomy of a JSON Web Token](https://scotch.io/tutorials/the-anatomy-of-a-json-web-token)
-* [Cookies vs tokens](https://auth0.com/blog/2014/01/07/angularjs-authentication-with-cookies-vs-token/)
-
 ## Using from SBT
 
-For `akka-http` version `10+`:
-
 ````scala
-libraryDependencies += "com.softwaremill.akka-http-session" %% "core" % "0.7.0"
-libraryDependencies += "com.softwaremill.akka-http-session" %% "jwt"  % "0.7.0" // optional
+resolvers += "Softnetwork releases" at "https://softnetwork.jfrog.io/artifactory/releases/"
+libraryDependencies += "app.softnetwork.tapir-http-session" %% "core" % "0.1.0"
 ````
-
-## Updating
-
-Certain releases changed the client token encoding/serialization. In those cases, it's important to enable the appropriate
-token migrations, otherwise existing client sessions will be invalid (and your users will be logged out).
-
-When updating from a version before 0.5.3, set `akka.http.session.token-migration.v0-5-3.enabled = true`.
-
-When updating from a version before 0.5.2, set `akka.http.session.token-migration.v0-5-2.enabled = true`.
-
-Note that when updating through multiple releases, be sure to enable all the appropriate migrations.
-
-For versions prior to 0.5.0, no migration path is provided. However, you can implement your own encoders/serializers
-to support migrating from whatever version you are using.
-
-Since token changes may be security related, migrations should be enabled for the shortest period of time
-after which the vast majority of client tokens have been migrated.
-
-## Commercial Support
-
-We offer commercial support for akka-http-session and related technologies, as well as development services. [Contact us](https://softwaremill.com) to learn more about our offer!
-
-## Copyright
-
-Copyright (C) 2016-2021 SoftwareMill [https://softwaremill.com](https://softwaremill.com).
