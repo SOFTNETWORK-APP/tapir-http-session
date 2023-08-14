@@ -28,19 +28,19 @@ session data that is sent to the client, and verified when the session token is 
 
 ## `akka-http-session` features
 
-* type-safe client-side sessions
-* sessions can be encrypted
-* sessions contain an expiry date
-* cookie or custom header transport
-* support for [JWT](http://jwt.io/)
-* refresh token support (e.g. to implement "remember me")
-* CSRF tokens support
-* Java & Scala APIs
+*  type-safe client-side sessions
+*  sessions can be encrypted
+*  sessions contain an expiry date
+*  cookie or custom header transport
+*  support for [JWT](http://jwt.io/)
+*  refresh token support (e.g. to implement "remember me")
+*  CSRF tokens support
+*  Java & Scala APIs
 
 ## `tapir-http-session` features
 
-* all `akka-http-session` features
-* [tapir](https://tapir.softwaremill.com) integration
+*  all `akka-http-session` features
+*  [tapir](https://tapir.softwaremill.com) integration
 
 ## `SessionManager` & configuration
 
@@ -65,9 +65,9 @@ recommended that all sites use `https` and all cookies have this attribute set.
 
 All session-related endpoints take at least two parameters:
  
-* session continuity: `oneOff` vs `refreshable`; specifies what should happen when the session expires. If `refreshable`
+*  session continuity: `oneOff` vs `refreshable`; specifies what should happen when the session expires. If `refreshable`
 and a refresh token is present, the session will be re-created. See below for details.
-* session transport: `usingCookies` vs `usingHeaders`
+*  session transport: `usingCookies` vs `usingHeaders`
 
 Typically, you would create aliases for the session-related endpoints which use the right parameters basing on the
 current request and logic specific to your application.
@@ -132,10 +132,10 @@ or the [Play! docs](https://www.playframework.com/documentation/2.2.x/JavaCsrf) 
 
 Web apps which use cookies for session management should be protected against CSRF attacks. This implementation:
 
-* assumes that `GET` requests are non-mutating (have no side effects)
-* uses double-submit cookies to verify requests
-* requires the token to be set in a custom header or (optionally) in a form field
-* generates a new token on the first `GET` request that doesn't have the token cookie set
+*  assumes that `GET` requests are non-mutating (have no side effects)
+*  uses double-submit cookies to verify requests
+*  requires the token to be set in a custom header or (optionally) in a form field
+*  generates a new token on the first `GET` request that doesn't have the token cookie set
 
 Note that if the token is passed in a form field, the website isn't protected by HTTPS or you don't control all 
 subdomains, this scheme [can be broken](http://security.stackexchange.com/questions/59470/double-submit-cookies-vulnerabilities/61039#61039).
