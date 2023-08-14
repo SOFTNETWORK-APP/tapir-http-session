@@ -5,7 +5,7 @@
 
 [`tapir`](https://tapir.softwaremill.com) is a declarative, type-safe web endpoints library.
 
-`akka-http-session` provides directives for client-side session management in web and mobile applications, using cookies
+[`akka-http-session`](https://github.com/softwaremill/akka-http-session) provides directives for client-side session management in web and mobile applications, using cookies
 or custom headers + local storage, with optional [Json Web Tokens](http://jwt.io/) format support. 
 
 A [comprehensive FAQ](https://github.com/softwaremill/akka-http-session-faq) is available, along with code examples (in Java, but easy to translate to Scala) which answers many common questions on how sessions work, how to secure them and implement using akka-http.
