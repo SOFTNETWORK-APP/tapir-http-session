@@ -13,14 +13,28 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 sealed trait TapirSessionContinuity[T] {
-  implicit def manager: SessionManager[T]
 
   implicit def ec: ExecutionContext
 
-  def options2session(values: Seq[Option[String]]): Option[T] = //TODO find a more appropriate name
+  def options2session(
+    values: Seq[Option[String]]
+  )(implicit manager: SessionManager[T]): Option[T] = //TODO find a more appropriate name
     values.flatMap(extractSession).headOption
 
-  def extractSession(maybeValue: Option[String]): Option[T]
+  def extractSession(maybeValue: Option[String])(implicit manager: SessionManager[T]): Option[T]
+
+  def sessionLogic(
+    existingSession: Option[SessionResult[T]],
+    maybeCookie: Option[String],
+    maybeHeader: Option[String],
+    gt: GetSessionTransport,
+    required: Option[Boolean],
+    touch: Boolean = false
+  )(implicit manager: SessionManager[T]): Either[Unit, (Seq[Option[String]], SessionResult[T])]
+
+  def setSessionLogic(session: Option[T], existing: Option[String])(implicit
+    manager: SessionManager[T]
+  ): Option[String]
 
   def setSession[SECURITY_INPUT, ERROR_OUTPUT, SECURITY_OUTPUT](st: SetSessionTransport)(
     body: => PartialServerEndpointWithSecurityOutput[
@@ -33,21 +47,27 @@ sealed trait TapirSessionContinuity[T] {
       Any,
       Future
     ]
+  )(implicit
+    manager: SessionManager[T]
   ): PartialServerEndpointWithSecurityOutput[(SECURITY_INPUT, Seq[Option[String]]), Option[
     T
   ], Unit, ERROR_OUTPUT, (SECURITY_OUTPUT, Seq[Option[String]]), Unit, Any, Future]
 
   def session(
-    st: GetSessionTransport,
+    gt: GetSessionTransport,
     required: Option[Boolean]
+  )(implicit
+    manager: SessionManager[T]
   ): PartialServerEndpointWithSecurityOutput[Seq[Option[String]], SessionResult[T], Unit, Unit, Seq[
     Option[String]
   ], Unit, Any, Future]
 
-  def optionalSession(st: GetSessionTransport): PartialServerEndpointWithSecurityOutput[Seq[
+  final def optionalSession(
+    gt: GetSessionTransport
+  )(implicit manager: SessionManager[T]): PartialServerEndpointWithSecurityOutput[Seq[
     Option[String]
   ], Option[T], Unit, Unit, Seq[Option[String]], Unit, Any, Future] = {
-    val partial = session(st, Some(false))
+    val partial = session(gt, Some(false))
     partial.endpoint
       .out(partial.securityOutput)
       .serverSecurityLogicWithOutput { inputs =>
@@ -58,10 +78,12 @@ sealed trait TapirSessionContinuity[T] {
       }
   }
 
-  def requiredSession(st: GetSessionTransport): PartialServerEndpointWithSecurityOutput[Seq[
+  final def requiredSession(
+    gt: GetSessionTransport
+  )(implicit manager: SessionManager[T]): PartialServerEndpointWithSecurityOutput[Seq[
     Option[String]
   ], T, Unit, Unit, Seq[Option[String]], Unit, Any, Future] = {
-    val partial = session(st, Some(true))
+    val partial = session(gt, Some(true))
     partial.endpoint
       .out(partial.securityOutput)
       .serverSecurityLogicWithOutput { inputs =>
@@ -80,7 +102,7 @@ sealed trait TapirSessionContinuity[T] {
     SECURITY_INPUT,
     PRINCIPAL,
     ERROR_OUTPUT
-  ](st: GetSessionTransport)(
+  ](gt: GetSessionTransport)(
     body: => PartialServerEndpointWithSecurityOutput[
       SECURITY_INPUT,
       PRINCIPAL,
@@ -91,7 +113,7 @@ sealed trait TapirSessionContinuity[T] {
       Any,
       Future
     ]
-  ): PartialServerEndpointWithSecurityOutput[
+  )(implicit manager: SessionManager[T]): PartialServerEndpointWithSecurityOutput[
     (SECURITY_INPUT, Seq[Option[String]]),
     PRINCIPAL,
     Unit,
@@ -103,16 +125,20 @@ sealed trait TapirSessionContinuity[T] {
   ]
 
   def touchSession(
-    st: GetSessionTransport,
+    gt: GetSessionTransport,
     required: Option[Boolean]
+  )(implicit
+    manager: SessionManager[T]
   ): PartialServerEndpointWithSecurityOutput[Seq[Option[String]], SessionResult[T], Unit, Unit, Seq[
     Option[String]
   ], Unit, Any, Future]
 
-  def touchOptionalSession(st: GetSessionTransport): PartialServerEndpointWithSecurityOutput[Seq[
+  final def touchOptionalSession(
+    gt: GetSessionTransport
+  )(implicit manager: SessionManager[T]): PartialServerEndpointWithSecurityOutput[Seq[
     Option[String]
   ], Option[T], Unit, Unit, Seq[Option[String]], Unit, Any, Future] = {
-    val partial = touchSession(st, Some(false))
+    val partial = touchSession(gt, Some(false))
     partial.endpoint
       .out(partial.securityOutput)
       .serverSecurityLogicWithOutput { inputs =>
@@ -123,10 +149,12 @@ sealed trait TapirSessionContinuity[T] {
       }
   }
 
-  def touchRequiredSession(st: GetSessionTransport): PartialServerEndpointWithSecurityOutput[Seq[
+  final def touchRequiredSession(
+    gt: GetSessionTransport
+  )(implicit manager: SessionManager[T]): PartialServerEndpointWithSecurityOutput[Seq[
     Option[String]
   ], T, Unit, Unit, Seq[Option[String]], Unit, Any, Future] = {
-    val partial = touchSession(st, Some(true))
+    val partial = touchSession(gt, Some(true))
     partial.endpoint
       .out(partial.securityOutput)
       .serverSecurityLogicWithOutput { inputs =>
@@ -145,112 +173,12 @@ sealed trait TapirSessionContinuity[T] {
 
 trait OneOffTapirSessionContinuity[T] extends TapirSessionContinuity[T] {
   _: OneOffTapirSession[T] =>
-
-  override def extractSession(maybeValue: Option[String]): Option[T] = extractOneOffSession(
-    maybeValue
-  )
-
-  override def setSession[SECURITY_INPUT, ERROR_OUTPUT, SECURITY_OUTPUT](st: SetSessionTransport)(
-    body: => PartialServerEndpointWithSecurityOutput[SECURITY_INPUT, Option[
-      T
-    ], Unit, ERROR_OUTPUT, SECURITY_OUTPUT, Unit, Any, Future]
-  ): PartialServerEndpointWithSecurityOutput[(SECURITY_INPUT, Seq[Option[String]]), Option[
-    T
-  ], Unit, ERROR_OUTPUT, (SECURITY_OUTPUT, Seq[Option[String]]), Unit, Any, Future] =
-    setOneOffSession(st)(body)
-
-  override def session(
-    st: GetSessionTransport,
-    required: Option[Boolean]
-  ): PartialServerEndpointWithSecurityOutput[Seq[Option[String]], SessionResult[T], Unit, Unit, Seq[
-    Option[String]
-  ], Unit, Any, Future] =
-    oneOffSession(st, required)
-
-  override def invalidateSession[SECURITY_INPUT, PRINCIPAL, ERROR_OUTPUT](st: GetSessionTransport)(
-    body: => PartialServerEndpointWithSecurityOutput[
-      SECURITY_INPUT,
-      PRINCIPAL,
-      Unit,
-      ERROR_OUTPUT,
-      _,
-      Unit,
-      Any,
-      Future
-    ]
-  ): PartialServerEndpointWithSecurityOutput[
-    (SECURITY_INPUT, Seq[Option[String]]),
-    PRINCIPAL,
-    Unit,
-    ERROR_OUTPUT,
-    Seq[Option[String]],
-    Unit,
-    Any,
-    Future
-  ] =
-    invalidateOneOffSession(st)(body)
-
-  override def touchSession(
-    st: GetSessionTransport,
-    required: Option[Boolean]
-  ): PartialServerEndpointWithSecurityOutput[Seq[Option[String]], SessionResult[T], Unit, Unit, Seq[
-    Option[String]
-  ], Unit, Any, Future] = touchOneOffSession(st, required)
 }
 
 trait RefreshableTapirSessionContinuity[T] extends TapirSessionContinuity[T] with Completion {
   this: RefreshableTapirSession[T] with OneOffTapirSession[T] =>
 
-  override def extractSession(maybeValue: Option[String]): Option[T] = extractRefreshableSession(
-    maybeValue
-  )
-
-  def removeToken(value: String): Try[Unit] =
+  def removeToken(value: String)(implicit manager: SessionManager[T]): Try[Unit] =
     refreshable.refreshTokenManager.removeToken(value).complete()
 
-  override def setSession[SECURITY_INPUT, ERROR_OUTPUT, SECURITY_OUTPUT](st: SetSessionTransport)(
-    body: => PartialServerEndpointWithSecurityOutput[SECURITY_INPUT, Option[
-      T
-    ], Unit, ERROR_OUTPUT, SECURITY_OUTPUT, Unit, Any, Future]
-  ): PartialServerEndpointWithSecurityOutput[(SECURITY_INPUT, Seq[Option[String]]), Option[
-    T
-  ], Unit, ERROR_OUTPUT, (SECURITY_OUTPUT, Seq[Option[String]]), Unit, Any, Future] =
-    setRefreshableSession(st)(body)
-
-  override def session(
-    st: GetSessionTransport,
-    required: Option[Boolean]
-  ): PartialServerEndpointWithSecurityOutput[Seq[Option[String]], SessionResult[T], Unit, Unit, Seq[
-    Option[String]
-  ], Unit, Any, Future] = refreshableSession(st, required)
-
-  override def invalidateSession[SECURITY_INPUT, PRINCIPAL, ERROR_OUTPUT](st: GetSessionTransport)(
-    body: => PartialServerEndpointWithSecurityOutput[
-      SECURITY_INPUT,
-      PRINCIPAL,
-      Unit,
-      ERROR_OUTPUT,
-      _,
-      Unit,
-      Any,
-      Future
-    ]
-  ): PartialServerEndpointWithSecurityOutput[
-    (SECURITY_INPUT, Seq[Option[String]]),
-    PRINCIPAL,
-    Unit,
-    ERROR_OUTPUT,
-    Seq[Option[String]],
-    Unit,
-    Any,
-    Future
-  ] =
-    invalidateRefreshableSession(st)(body)
-
-  override def touchSession(
-    st: GetSessionTransport,
-    required: Option[Boolean]
-  ): PartialServerEndpointWithSecurityOutput[Seq[Option[String]], SessionResult[T], Unit, Unit, Seq[
-    Option[String]
-  ], Unit, Any, Future] = touchRefreshableSession(st, required)
 }

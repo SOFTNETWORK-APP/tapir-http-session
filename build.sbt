@@ -4,7 +4,7 @@ val scala2 = List(scala2_12, scala2_13)
 
 lazy val commonSettings = Seq(
   organization := "app.softnetwork.tapir-http-session",
-  version := "0.1.0",
+  version := "0.2.0",
   versionScheme := Some("early-semver")
 )
 

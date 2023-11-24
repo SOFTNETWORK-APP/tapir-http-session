@@ -1,6 +1,6 @@
 package app.softnetwork.session
 
-import com.softwaremill.session.{GetSessionTransport, SetSessionTransport}
+import com.softwaremill.session.{GetSessionTransport, SessionManager, SetSessionTransport}
 import sttp.model.Method
 import sttp.model.headers.CookieValueWithMeta
 import sttp.tapir.EndpointInput
@@ -12,9 +12,9 @@ trait TapirEndpoints extends SessionEndpoints with CsrfEndpoints {
 
   def antiCsrfWithRequiredSession[T](
     sc: TapirSessionContinuity[T],
-    st: GetSessionTransport,
+    gt: GetSessionTransport,
     checkMode: TapirCsrfCheckMode[T]
-  ): PartialServerEndpointWithSecurityOutput[
+  )(implicit manager: SessionManager[T]): PartialServerEndpointWithSecurityOutput[
     (Seq[Option[String]], Option[String], Method, Option[String]),
     T,
     Unit,
@@ -25,14 +25,14 @@ trait TapirEndpoints extends SessionEndpoints with CsrfEndpoints {
     Future
   ] =
     hmacTokenCsrfProtection(checkMode) {
-      requiredSession(sc, st)
+      requiredSession(sc, gt)
     }
 
   def antiCsrfWithOptionalSession[T](
     sc: TapirSessionContinuity[T],
-    st: GetSessionTransport,
+    gt: GetSessionTransport,
     checkMode: TapirCsrfCheckMode[T]
-  ): PartialServerEndpointWithSecurityOutput[
+  )(implicit manager: SessionManager[T]): PartialServerEndpointWithSecurityOutput[
     (Seq[Option[String]], Option[String], Method, Option[String]),
     Option[T],
     Unit,
@@ -43,7 +43,7 @@ trait TapirEndpoints extends SessionEndpoints with CsrfEndpoints {
     Future
   ] =
     hmacTokenCsrfProtection(checkMode) {
-      optionalSession(sc, st)
+      optionalSession(sc, gt)
     }
 
   def setNewCsrfTokenAndSession[T, SECURITY_INPUT, ERROR_OUTPUT, SECURITY_OUTPUT](
@@ -54,6 +54,8 @@ trait TapirEndpoints extends SessionEndpoints with CsrfEndpoints {
     body: => PartialServerEndpointWithSecurityOutput[SECURITY_INPUT, Option[
       T
     ], Unit, ERROR_OUTPUT, SECURITY_OUTPUT, Unit, Any, Future]
+  )(implicit
+    manager: SessionManager[T]
   ): PartialServerEndpointWithSecurityOutput[(SECURITY_INPUT, Seq[Option[String]]), Option[
     T
   ], Unit, ERROR_OUTPUT, ((SECURITY_OUTPUT, Seq[Option[String]]), Option[CookieValueWithMeta]), Unit, Any, Future] =
@@ -68,7 +70,8 @@ trait TapirEndpoints extends SessionEndpoints with CsrfEndpoints {
     st: SetSessionTransport,
     checkMode: TapirCsrfCheckMode[T]
   )(auth: => EndpointInput.Auth[A, EndpointInput.AuthType.Http])(implicit
-    f: A => Option[T]
+    f: A => Option[T],
+    manager: SessionManager[T]
   ): PartialServerEndpointWithSecurityOutput[(A, Seq[Option[String]]), Option[
     T
   ], Unit, Unit, ((Unit, Seq[Option[String]]), Option[CookieValueWithMeta]), Unit, Any, Future] =
