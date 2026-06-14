@@ -1,20 +1,20 @@
-val scala2_12 = "2.12.18"
-val scala2_13 = "2.13.8"
+val scala2_12 = "2.12.20"
+val scala2_13 = "2.13.16"
 val scala2 = List(scala2_12, scala2_13)
 
 lazy val commonSettings = Seq(
   organization := "app.softnetwork.tapir-http-session",
-  version := "0.2.0",
+  version := "0.3.0",
   versionScheme := Some("early-semver")
 )
 
-val akkaHttpSessionVersion = "0.7.0"
-val akkaHttpVersion = "10.2.7"
-val akkaVersion = "2.6.18"
-val json4sVersion = "4.0.4"
+val akkaHttpSessionVersion = "0.7.1"
+val akkaHttpVersion = "10.2.10"
+val akkaVersion = "2.6.21"
+val json4sVersion = "4.0.6"
 val akkaStreams = "com.typesafe.akka" %% "akka-stream" % akkaVersion
 val akkaStreamsTestkit = "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % "test"
-val tapirVersion = "1.7.0"
+val tapirVersion = "1.8.5"
 
 val scalaTest = "org.scalatest" %% "scalatest" % "3.2.11" % "test"
 
@@ -31,7 +31,7 @@ lazy val example = (projectMatrix in file("example"))
       "com.typesafe.akka" %% "akka-actor" % akkaVersion,
       akkaStreams,
       "com.typesafe.scala-logging" %% "scala-logging" % "3.9.4",
-      "ch.qos.logback" % "logback-classic" % "1.2.10",
+      "ch.qos.logback" % "logback-classic" % "1.4.14",
       "org.json4s" %% "json4s-ext" % json4sVersion,
       "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-bundle" % tapirVersion
     )
